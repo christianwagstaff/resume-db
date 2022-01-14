@@ -73,6 +73,31 @@ describe("Testing Project Route", () => {
       })
     );
   });
+  it("edits Project on PUT", async () => {
+    const response = await request.put("/projects").send({
+      projectId: projectList[0],
+      name: "Test Edit Project",
+      details: "Test Edit Details",
+    });
+    expect(response.body).toMatchObject({
+      msg: "Project Updated",
+      project: expect.objectContaining({
+        name: "Test Edit Project",
+        details: "Test Edit Details",
+        img: "http://google.com",
+      }),
+    });
+    expect(response.body.project._id).toEqual(projectList[0]._id.toString());
+  });
+  it("Deletes projects on DELETE", async () => {
+    const response = await request.delete("/projects").send({
+      projectId: projectList[0]._id,
+    });
+    expect(response.body).toMatchObject({
+      msg: "Project Deleted",
+      project: `${projectList[0]._id.toString()}`,
+    });
+  });
 });
 
 describe("Testing About Route", () => {

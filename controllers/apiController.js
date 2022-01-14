@@ -38,6 +38,10 @@ exports.get_contact = (req, res, next) => {
   });
 };
 
+/**
+ * POST Requests
+ */
+
 // Create new project on post
 exports.create_project = [
   // If Img is undefined, turn it into an empty string
@@ -156,3 +160,68 @@ exports.create_contact = [
     });
   },
 ];
+
+/**
+ * PUT Requests
+ */
+
+// Edit Project
+exports.edit_project = [
+  // If Img is undefined, turn it into an empty string
+  (req, res, next) => {
+    if (typeof req.body.img === "undefined") {
+      req.body.img = "";
+    }
+    next();
+  },
+  body("name", "name is required").trim().isLength({ min: 1 }).escape(),
+  body("details", "details are required").trim().isLength({ min: 1 }).escape(),
+  body("img").escape(),
+
+  // Proceed with request after validation and sanitization
+  (req, res, next) => {
+    // extract validation errors
+    const errors = validationResult(req);
+    // Create Project obj with escaped and trimmed data
+    let project = new Project({
+      name: req.body.name,
+      details: req.body.details,
+      _id: req.body.projectId, // Required so a new ID is not issued
+    });
+    if (req.body.img !== "") {
+      project.img = req.body.img;
+    }
+
+    if (!errors.isEmpty()) {
+      // There are validation errors, send back the data for correction
+      return res.json({ errors: errors.array(), project });
+    }
+    // There are no errors, save the new project
+    Project.findByIdAndUpdate(
+      req.body.projectId,
+      project,
+      { new: true },
+      function (err, saved) {
+        if (err) {
+          return next(err);
+        }
+        // Save Successful, send back completed project
+        return res.json({ project: saved, msg: "Project Updated" });
+      }
+    );
+  },
+];
+
+/**
+ * DELETE Requests
+ */
+
+// Delete project by ID
+exports.delete_project = (req, res, next) => {
+  Project.findByIdAndDelete(req.body.projectId, {}, (err) => {
+    if (err) {
+      return next(err);
+    }
+    res.json({ msg: "Project Deleted", project: req.body.projectId });
+  });
+};

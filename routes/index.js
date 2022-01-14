@@ -21,4 +21,10 @@ router.post("/about", api_controller.create_about);
 // POST New Contact
 router.post("/contact", api_controller.create_contact);
 
+// PUT Edit Project Details
+router.put("/projects", api_controller.edit_project);
+
+// DELETE Delete Project
+router.delete("/projects", api_controller.delete_project);
+
 module.exports = router;
