@@ -2,6 +2,7 @@ const { body, validationResult } = require("express-validator");
 
 const Project = require("../models/project");
 const About = require("../models/about");
+const Contact = require("../models/contact");
 
 /**
  * GET Requests
@@ -19,11 +20,21 @@ exports.get_projects = (req, res, next) => {
 
 // Sends About on GET
 exports.get_about = (req, res, next) => {
-  About.find().exec((err, about) => {
+  About.findOne().exec((err, about) => {
     if (err) {
       return next(err);
     }
-    return res.json({ about: about[0] });
+    return res.json({ about });
+  });
+};
+
+// Send Contact Info on GET
+exports.get_contact = (req, res, next) => {
+  Contact.findOne().exec((err, contact) => {
+    if (err) {
+      return next(err);
+    }
+    res.json({ contact });
   });
 };
 
@@ -98,6 +109,50 @@ exports.create_about = [
       }
       // Save Successful, send back completed project
       return res.json({ about: saved, msg: "About Saved" });
+    });
+  },
+];
+
+// Create new Contact on POST
+exports.create_contact = [
+  // Convert the links to an array
+  (req, res, next) => {
+    if (!(req.body.links instanceof Array)) {
+      if (typeof req.body.links === "undefined") {
+        req.body.links = [];
+      } else {
+        req.body.links = new Array(req.body.links);
+      }
+    }
+    next();
+  },
+
+  // Sanitze and Validate Body
+  body("email", "email is required").trim().isEmail().escape(),
+  body("links.*.name").escape(),
+  body("links.*.url").escape(),
+
+  // Proceed with request after validation and sanitization
+  (req, res, next) => {
+    // extract validation errors
+    const errors = validationResult(req);
+    // Create Project obj with escaped and trimmed data
+    let contact = new Contact({
+      user: req.body.user,
+      email: req.body.email,
+      links: req.body.links,
+    });
+    if (!errors.isEmpty()) {
+      // There are validation errors, send back the data for correction
+      return res.json({ errors: errors.array(), contact });
+    }
+    // There are no errors, save the new project
+    contact.save(function (err, saved) {
+      if (err) {
+        return next(err);
+      }
+      // Save Successful, send back completed project
+      return res.json({ contact: saved, msg: "Contact Saved" });
     });
   },
 ];

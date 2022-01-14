@@ -8,7 +8,7 @@ const ContactSchema = new Schema({
   links: [
     {
       name: { type: String, required: true },
-      link: { type: String, required: true },
+      url: { type: String, required: true },
     },
   ],
 });

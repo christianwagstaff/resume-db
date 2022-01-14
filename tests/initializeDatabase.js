@@ -7,6 +7,9 @@ const async = require("async");
 
 const initializeDatabase = async () => {
   let userList = [];
+  let projectList = [];
+  let contactList = [];
+  let aboutList = [];
   function createUser(name, email, password, cb) {
     const userDetails = { name, username: email, password };
     const user = new User(userDetails);
@@ -25,6 +28,7 @@ const initializeDatabase = async () => {
       if (err) {
         return cb(err);
       }
+      aboutList.push(aboutMe);
       cb(null, aboutMe);
     });
   }
@@ -38,6 +42,7 @@ const initializeDatabase = async () => {
       if (err) {
         return cb(err);
       }
+      contactList.push(contact);
       cb(null, contact);
     });
   }
@@ -51,6 +56,7 @@ const initializeDatabase = async () => {
       if (err) {
         return cb(err);
       }
+      projectList.push(project);
       cb(null, project);
     });
   }
@@ -82,7 +88,12 @@ const initializeDatabase = async () => {
     async.series(
       [
         (callback) =>
-          createContact(userList[0], "Test Contact Email", false, callback),
+          createContact(
+            userList[0],
+            "Test Contact Email",
+            [{ name: "LinkedIn", url: "linkedin.com" }],
+            callback
+          ),
       ],
       cb
     );
@@ -116,7 +127,7 @@ const initializeDatabase = async () => {
     createContacts,
     createProjects,
   ]);
-  return userList;
+  return [userList, projectList, contactList, aboutList];
 };
 
 module.exports = initializeDatabase;

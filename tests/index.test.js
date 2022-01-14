@@ -16,11 +16,12 @@ app.use("/", indexRoute);
 const request = supertest(app);
 
 describe("Testing Project Route", () => {
-  let userList;
+  let userList, projectList, contactList, aboutList;
   beforeEach(async () => {
     let mongoServer = await MongoMemoryServer.create();
     await mongoose.connect(mongoServer.getUri(), {});
-    userList = await initializeDatabase();
+    [userList, projectList, contactList, aboutList] =
+      await initializeDatabase();
   });
   afterEach(async () => {
     await mongoose.disconnect();
@@ -75,11 +76,12 @@ describe("Testing Project Route", () => {
 });
 
 describe("Testing About Route", () => {
-  let userList;
+  let userList, projectList, contactList, aboutList;
   beforeEach(async () => {
     let mongoServer = await MongoMemoryServer.create();
     await mongoose.connect(mongoServer.getUri(), {});
-    userList = await initializeDatabase();
+    [userList, projectList, contactList, aboutList] =
+      await initializeDatabase();
   });
   afterEach(async () => {
     await mongoose.disconnect();
@@ -109,5 +111,47 @@ describe("Testing About Route", () => {
         about: "Test About",
       }),
     });
+  });
+});
+
+describe("Testing Contact Route", () => {
+  let userList, projectList, contactList, aboutList;
+  beforeEach(async () => {
+    let mongoServer = await MongoMemoryServer.create();
+    await mongoose.connect(mongoServer.getUri(), {});
+    [userList, projectList, contactList, aboutList] =
+      await initializeDatabase();
+  });
+  afterEach(async () => {
+    await mongoose.disconnect();
+  });
+  it("Send contact details on GET", async () => {
+    const response = await request.get("/contact");
+    expect(response.body).toMatchObject({
+      contact: expect.objectContaining({
+        email: "Test Contact Email",
+        links: [
+          expect.objectContaining({ name: "LinkedIn", url: "linkedin.com" }),
+        ],
+      }),
+    });
+  });
+  it("Creates new contact info on POST", async () => {
+    const response = await request.post("/contact").send({
+      user: userList[0],
+      email: "test@email.com",
+      links: [{ name: "Test Name", url: "Test Url" }],
+    });
+    expect(response.body).toMatchObject(
+      expect.objectContaining({
+        contact: expect.objectContaining({
+          email: "test@email.com",
+          links: [
+            expect.objectContaining({ name: "Test Name", url: "Test Url" }),
+          ],
+        }),
+        msg: "Contact Saved",
+      })
+    );
   });
 });
