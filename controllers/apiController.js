@@ -1,10 +1,29 @@
 const { body, validationResult } = require("express-validator");
 
 const Project = require("../models/project");
+const About = require("../models/about");
 
-exports.get_projects = (req, res) => {
+/**
+ * GET Requests
+ */
+
+// Sends Projects on GET
+exports.get_projects = (req, res, next) => {
   Project.find().exec((err, projects) => {
+    if (err) {
+      return next(err);
+    }
     return res.json({ projects });
+  });
+};
+
+// Sends About on GET
+exports.get_about = (req, res, next) => {
+  About.find().exec((err, about) => {
+    if (err) {
+      return next(err);
+    }
+    return res.json({ about: about[0] });
   });
 };
 
@@ -46,6 +65,39 @@ exports.create_project = [
       }
       // Save Successful, send back completed project
       return res.json({ project: saved, msg: "Project Saved" });
+    });
+  },
+];
+
+// Create new About on post
+exports.create_about = [
+  // Sanitze and Validate Body
+  body("name", "name is required").trim().isLength({ min: 1 }).escape(),
+  body("about", "details are required").trim().isLength({ min: 1 }).escape(),
+  body("headline", "headline is required").trim().isLength({ min: 1 }).escape(),
+
+  // Proceed with request after validation and sanitization
+  (req, res, next) => {
+    // extract validation errors
+    const errors = validationResult(req);
+    // Create Project obj with escaped and trimmed data
+    let about = new About({
+      user: req.body.user,
+      name: req.body.name,
+      headline: req.body.headline,
+      about: req.body.about,
+    });
+    if (!errors.isEmpty()) {
+      // There are validation errors, send back the data for correction
+      return res.json({ errors: errors.array(), about });
+    }
+    // There are no errors, save the new project
+    about.save(function (err, saved) {
+      if (err) {
+        return next(err);
+      }
+      // Save Successful, send back completed project
+      return res.json({ about: saved, msg: "About Saved" });
     });
   },
 ];

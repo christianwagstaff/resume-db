@@ -15,7 +15,7 @@ app.use("/", indexRoute);
 
 const request = supertest(app);
 
-describe("Testing Index Route", () => {
+describe("Testing Project Route", () => {
   let userList;
   beforeEach(async () => {
     let mongoServer = await MongoMemoryServer.create();
@@ -61,13 +61,53 @@ describe("Testing Index Route", () => {
     });
     expect(response.body).toMatchObject(
       expect.objectContaining({
-        errors: expect.arrayContaining([{
-          value: "",
-          msg: "name is required",
-          param: "name",
-          location: "body",
-        }]),
+        errors: expect.arrayContaining([
+          {
+            value: "",
+            msg: "name is required",
+            param: "name",
+            location: "body",
+          },
+        ]),
       })
     );
+  });
+});
+
+describe("Testing About Route", () => {
+  let userList;
+  beforeEach(async () => {
+    let mongoServer = await MongoMemoryServer.create();
+    await mongoose.connect(mongoServer.getUri(), {});
+    userList = await initializeDatabase();
+  });
+  afterEach(async () => {
+    await mongoose.disconnect();
+  });
+  it("Send about details on GET", async () => {
+    const response = await request.get("/about");
+    expect(response.body).toMatchObject({
+      about: expect.objectContaining({
+        name: "Test About Name",
+        headline: "Test About Headline",
+        about: "Test About",
+      }),
+    });
+  });
+  it("Creates new about info on POST", async () => {
+    const response = await request.post("/about").send({
+      user: userList[0],
+      name: "Test Name",
+      headline: "Test Headline",
+      about: "Test About",
+    });
+    expect(response.body).toMatchObject({
+      msg: "About Saved",
+      about: expect.objectContaining({
+        name: "Test Name",
+        headline: "Test Headline",
+        about: "Test About",
+      }),
+    });
   });
 });
