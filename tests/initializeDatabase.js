@@ -116,6 +116,7 @@ const initializeDatabase = async () => {
     createContacts,
     createProjects,
   ]);
+  return userList;
 };
 
 module.exports = initializeDatabase;
