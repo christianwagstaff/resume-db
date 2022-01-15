@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const passport = require("passport");
 
 const api_controller = require("../controllers/apiController");
 
@@ -16,30 +17,66 @@ router.get("/about", api_controller.get_about);
 router.get("/contact", api_controller.get_contact);
 
 // POST new Project
-router.post("/projects", api_controller.create_project);
+router.post(
+  "/projects",
+  passport.authenticate("jwt", { session: false }),
+  api_controller.create_project
+);
 
 // POST New About
-router.post("/about", api_controller.create_about);
+router.post(
+  "/about",
+  passport.authenticate("jwt", { session: false }),
+  api_controller.create_about
+);
 
 // POST New Contact
-router.post("/contact", api_controller.create_contact);
+router.post(
+  "/contact",
+  passport.authenticate("jwt", { session: false }),
+  api_controller.create_contact
+);
 
 // PUT Edit Project Details
-router.put("/projects", api_controller.edit_project);
+router.put(
+  "/projects",
+  passport.authenticate("jwt", { session: false }),
+  api_controller.edit_project
+);
 
 // PUT Edit About Details
-router.put("/about", api_controller.edit_about);
+router.put(
+  "/about",
+  passport.authenticate("jwt", { session: false }),
+  api_controller.edit_about
+);
 
 //PUT Edit Contact Details
-router.put("/contact", api_controller.edit_contact);
+router.put(
+  "/contact",
+  passport.authenticate("jwt", { session: false }),
+  api_controller.edit_contact
+);
 
 // DELETE Delete Project
-router.delete("/projects", api_controller.delete_project);
+router.delete(
+  "/projects",
+  passport.authenticate("jwt", { session: false }),
+  api_controller.delete_project
+);
 
 // DELETE About
-router.delete("/about", api_controller.delete_about);
+router.delete(
+  "/about",
+  passport.authenticate("jwt", { session: false }),
+  api_controller.delete_about
+);
 
 // DELETE Contact
-router.delete("/contact", api_controller.delete_contact);
+router.delete(
+  "/contact",
+  passport.authenticate("jwt", { session: false }),
+  api_controller.delete_contact
+);
 
 module.exports = router;

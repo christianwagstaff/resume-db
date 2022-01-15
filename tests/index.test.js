@@ -1,6 +1,11 @@
 const express = require("express");
 const supertest = require("supertest");
 const app = express();
+const passport = require("passport");
+const util = require("../utils/issuejwt");
+
+// Pass the global passport obj into the config function
+require("../config/passport")(passport);
 
 // Set up Route
 const indexRoute = require("../routes/index");
@@ -9,21 +14,32 @@ const mongoose = require("mongoose");
 const initializeDatabase = require("./initializeDatabase");
 
 // Set up global middleware
+app.use(passport.initialize());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/", indexRoute);
 
 const request = supertest(app);
 
-describe("Gets All Info", () => {
-  let userList, projectList, contactList, aboutList;
-  beforeEach(async () => {
+describe("API Route", () => {
+  let userList, projectList, contactList, aboutList, jwt;
+  // Initiate MongoDb Memory Server Before Tests
+  beforeAll(async () => {
     let mongoServer = await MongoMemoryServer.create();
     await mongoose.connect(mongoServer.getUri(), {});
+  });
+  // Create Basic Test Data in DB
+  beforeEach(async () => {
     [userList, projectList, contactList, aboutList] =
       await initializeDatabase();
+    jwt = util.issueJWT(userList[0]);
   });
+  // Remove Databases after each test
   afterEach(async () => {
+    await mongoose.connection.db.dropDatabase();
+  });
+  // Stop the DB after all tests have ran
+  afterAll(async () => {
     await mongoose.disconnect();
   });
   it("Gets all info on index route", async () => {
@@ -33,19 +49,6 @@ describe("Gets All Info", () => {
       contact: expect.any(Array),
       about: expect.any(Array),
     });
-  });
-});
-
-describe("Testing Project Route", () => {
-  let userList, projectList, contactList, aboutList;
-  beforeEach(async () => {
-    let mongoServer = await MongoMemoryServer.create();
-    await mongoose.connect(mongoServer.getUri(), {});
-    [userList, projectList, contactList, aboutList] =
-      await initializeDatabase();
-  });
-  afterEach(async () => {
-    await mongoose.disconnect();
   });
   it("Sends projects on get route", async () => {
     const response = await request.get("/projects");
@@ -61,12 +64,15 @@ describe("Testing Project Route", () => {
     });
   });
   it("Creates new project on post route", async () => {
-    const response = await request.post("/projects").send({
-      name: "Test Project",
-      details: "Test Details",
-      img: "test img",
-      user: userList[0],
-    });
+    const response = await request
+      .post("/projects")
+      .set("Authorization", jwt.token)
+      .send({
+        name: "Test Project",
+        details: "Test Details",
+        img: "test img",
+        user: userList[0],
+      });
     expect(response.body).toMatchObject({
       msg: "Project Saved",
       project: expect.objectContaining({
@@ -77,10 +83,13 @@ describe("Testing Project Route", () => {
     });
   });
   it("rejects new project on post if data is not complete", async () => {
-    const response = await request.post("/projects").send({
-      user: userList[0],
-      details: "Test Details",
-    });
+    const response = await request
+      .post("/projects")
+      .set("Authorization", jwt.token)
+      .send({
+        user: userList[0],
+        details: "Test Details",
+      });
     expect(response.body).toMatchObject(
       expect.objectContaining({
         errors: expect.arrayContaining([
@@ -95,11 +104,14 @@ describe("Testing Project Route", () => {
     );
   });
   it("edits Project on PUT", async () => {
-    const response = await request.put("/projects").send({
-      projectId: projectList[0],
-      name: "Test Edit Project",
-      details: "Test Edit Details",
-    });
+    const response = await request
+      .put("/projects")
+      .set("Authorization", jwt.token)
+      .send({
+        projectId: projectList[0],
+        name: "Test Edit Project",
+        details: "Test Edit Details",
+      });
     expect(response.body).toMatchObject({
       msg: "Project Updated",
       project: expect.objectContaining({
@@ -111,27 +123,18 @@ describe("Testing Project Route", () => {
     expect(response.body.project._id).toEqual(projectList[0]._id.toString());
   });
   it("Deletes projects on DELETE", async () => {
-    const response = await request.delete("/projects").send({
-      projectId: projectList[0]._id,
-    });
+    const response = await request
+      .delete("/projects")
+      .set("Authorization", jwt.token)
+      .send({
+        projectId: projectList[0]._id,
+      });
     expect(response.body).toMatchObject({
       msg: "Project Deleted",
       project: `${projectList[0]._id.toString()}`,
     });
   });
-});
 
-describe("Testing About Route", () => {
-  let userList, projectList, contactList, aboutList;
-  beforeEach(async () => {
-    let mongoServer = await MongoMemoryServer.create();
-    await mongoose.connect(mongoServer.getUri(), {});
-    [userList, projectList, contactList, aboutList] =
-      await initializeDatabase();
-  });
-  afterEach(async () => {
-    await mongoose.disconnect();
-  });
   it("Send about details on GET", async () => {
     const response = await request.get("/about");
     expect(response.body).toMatchObject({
@@ -143,12 +146,15 @@ describe("Testing About Route", () => {
     });
   });
   it("Creates new about info on POST", async () => {
-    const response = await request.post("/about").send({
-      user: userList[0],
-      name: "Test Name",
-      headline: "Test Headline",
-      about: "Test About",
-    });
+    const response = await request
+      .post("/about")
+      .set("Authorization", jwt.token)
+      .send({
+        user: userList[0],
+        name: "Test Name",
+        headline: "Test Headline",
+        about: "Test About",
+      });
     expect(response.body).toMatchObject({
       msg: "About Saved",
       about: expect.objectContaining({
@@ -159,12 +165,15 @@ describe("Testing About Route", () => {
     });
   });
   it("Edits Info on PUT", async () => {
-    const response = await request.put("/about").send({
-      aboutId: aboutList[0]._id,
-      headline: "Test Edit Headline",
-      name: aboutList[0].name,
-      about: aboutList[0].about,
-    });
+    const response = await request
+      .put("/about")
+      .set("Authorization", jwt.token)
+      .send({
+        aboutId: aboutList[0]._id,
+        headline: "Test Edit Headline",
+        name: aboutList[0].name,
+        about: aboutList[0].about,
+      });
     expect(response.body).toMatchObject({
       msg: "About Updated",
       about: expect.objectContaining({
@@ -173,26 +182,16 @@ describe("Testing About Route", () => {
     });
   });
   it("Deletes about on DELETE", async () => {
-    const response = await request.delete("/about").send({
-      aboutId: aboutList[0]._id,
-    });
+    const response = await request
+      .delete("/about")
+      .set("Authorization", jwt.token)
+      .send({
+        aboutId: aboutList[0]._id,
+      });
     expect(response.body).toMatchObject({
       msg: "About Deleted",
       about: `${aboutList[0]._id.toString()}`,
     });
-  });
-});
-
-describe("Testing Contact Route", () => {
-  let userList, projectList, contactList, aboutList;
-  beforeEach(async () => {
-    let mongoServer = await MongoMemoryServer.create();
-    await mongoose.connect(mongoServer.getUri(), {});
-    [userList, projectList, contactList, aboutList] =
-      await initializeDatabase();
-  });
-  afterEach(async () => {
-    await mongoose.disconnect();
   });
   it("Send contact details on GET", async () => {
     const response = await request.get("/contact");
@@ -206,11 +205,14 @@ describe("Testing Contact Route", () => {
     });
   });
   it("Creates new contact info on POST", async () => {
-    const response = await request.post("/contact").send({
-      user: userList[0],
-      email: "testy@email.com",
-      links: [{ name: "Test Name", url: "Test Url" }],
-    });
+    const response = await request
+      .post("/contact")
+      .set("Authorization", jwt.token)
+      .send({
+        user: userList[0],
+        email: "testy@email.com",
+        links: [{ name: "Test Name", url: "Test Url" }],
+      });
     expect(response.body).toMatchObject(
       expect.objectContaining({
         contact: expect.objectContaining({
@@ -224,12 +226,15 @@ describe("Testing Contact Route", () => {
     );
   });
   it("Edits Contact Details on PUT", async () => {
-    const response = await request.put("/contact").send({
-      contactId: contactList[0]._id,
-      user: contactList[0].user,
-      email: contactList[0].email,
-      links: [...contactList[0].links, { name: "GitHub", url: "github.com" }],
-    });
+    const response = await request
+      .put("/contact")
+      .set("Authorization", jwt.token)
+      .send({
+        contactId: contactList[0]._id,
+        user: contactList[0].user,
+        email: contactList[0].email,
+        links: [...contactList[0].links, { name: "GitHub", url: "github.com" }],
+      });
     expect(response.body).toMatchObject({
       msg: "Contact Updated",
       contact: expect.objectContaining({
@@ -241,9 +246,12 @@ describe("Testing Contact Route", () => {
     });
   });
   it("Deletes Contact Details on DELETE", async () => {
-    const response = await request.delete("/contact").send({
-      contactId: contactList[0]._id,
-    });
+    const response = await request
+      .delete("/contact")
+      .set("Authorization", jwt.token)
+      .send({
+        contactId: contactList[0]._id,
+      });
     expect(response.body).toMatchObject({
       msg: "Contact Deleted",
       contact: `${contactList[0]._id.toString()}`,
