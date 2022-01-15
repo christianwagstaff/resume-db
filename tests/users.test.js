@@ -48,6 +48,43 @@ describe("User Registration and Login", () => {
       username: "test@email.com",
       password: "123",
     });
-    expect(response.body.user.password).not.toBe('123');
+    expect(response.body.user.password).not.toBe("123");
+  });
+  it("Doesn't allow the same email twice", async () => {
+    const response = await request.post("/register").send({
+      register_password: process.env.REGISTER_PASSWORD,
+      username: "test@email.com",
+      password: "123",
+    });
+    const secondResponse = await request.post("/register").send({
+      register_password: process.env.REGISTER_PASSWORD,
+      username: "test@email.com",
+      password: "123",
+    });
+    expect(secondResponse.status).toBe(401);
+  });
+  it("allows users to log in with their correct info", async () => {
+    const register = await request.post("/register").send({
+      register_password: process.env.REGISTER_PASSWORD,
+      username: "test@email.com",
+      password: "123",
+    });
+    const correct = await request.post("/login").send({
+      username: "test@email.com",
+      password: "123",
+    });
+    const incorrectPassword = await request.post("/login").send({
+      username: "test@email.com",
+      password: "456",
+    });
+    const incorrectUsername = await request.post("/login").send({
+      username: "testuser@email.com",
+      password: "123",
+    });
+    expect(correct.body).toMatchObject({ success: true });
+    expect(incorrectPassword.body).toMatchObject({ success: false });
+    expect(incorrectPassword.status).toBe(401);
+    expect(incorrectUsername.body).toMatchObject({ success: false });
+    expect(incorrectUsername.status).toBe(401);
   });
 });

@@ -14,14 +14,18 @@ exports.register_user = [
   (req, res, next) => {
     // Only Allow people with the registeration password to create an account
     if (req.body.register_password !== process.env.REGISTER_PASSWORD) {
-      return res.status(401).json({ msg: "Registration Password Invalid" });
+      return res
+        .status(401)
+        .json({ success: false, msg: "Registration Password Invalid" });
     }
     User.findOne({ username: req.body.username }, (err, user) => {
       if (err) {
         return next(err);
       }
       if (user) {
-        return res.json({ success: false, msg: "email is already in use" });
+        return res
+          .status(401)
+          .json({ success: false, msg: "email is already in use" });
       }
       // No User found, sign them up
       bcrypt.hash(req.body.password, 10, (err, hashedPassword) => {
@@ -48,3 +52,33 @@ exports.register_user = [
     });
   },
 ];
+
+// Login
+exports.login = (req, res, next) => {
+  User.findOne({ username: req.body.username }).exec((err, user) => {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, msg: "Username or Password is Incorrect" });
+    }
+    bcrypt.compare(req.body.password, user.password, (err, isValid) => {
+      if (isValid) {
+        // password match! User login
+        const jwtToken = issueJWT.issueJWT(user);
+        return res.json({
+          success: true,
+          token: jwtToken.token,
+          expiresIn: jwtToken.expires,
+        });
+      } else {
+        // Incorrect Password
+        res
+          .status(401)
+          .json({ success: false, msg: "Username or Password is Incorrect" });
+      }
+    });
+  });
+};
