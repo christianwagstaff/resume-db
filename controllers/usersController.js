@@ -67,11 +67,11 @@ exports.login = (req, res, next) => {
     bcrypt.compare(req.body.password, user.password, (err, isValid) => {
       if (isValid) {
         // password match! User login
-        const jwtToken = issueJWT.issueJWT(user);
+        const jwt = issueJWT.issueJWT(user);
         return res.json({
           success: true,
-          token: jwtToken.token,
-          expiresIn: jwtToken.expires,
+          token: jwt.token,
+          expiresIn: jwt.expires,
         });
       } else {
         // Incorrect Password

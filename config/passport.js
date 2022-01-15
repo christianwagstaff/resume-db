@@ -17,12 +17,16 @@ const strategy = new JwtStrategy(options, (payload, done) => {
   User.findOne({ _id: payload.sub })
     .then((user) => {
       if (user) {
-        done(null, user);
+        if (Date.now() <= payload.exp) {
+          done(null, user);
+        } else {
+          done(null, false);
+        }
       } else {
         done(null, false);
       }
     })
-    .catch((err) => done(err, false));
+    .catch((err) => done(err, null));
 });
 
 module.exports = (passport) => {
