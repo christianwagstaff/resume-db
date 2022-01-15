@@ -5,11 +5,7 @@ const passport = require("passport");
 const api_controller = require("../controllers/apiController");
 
 // GET All Info
-router.get(
-  "/",
-  passport.authenticate("jwt", { session: false }),
-  api_controller.get_all_info
-);
+router.get("/", api_controller.get_all_info);
 
 // GET Project List
 router.get("/projects", api_controller.get_projects);
