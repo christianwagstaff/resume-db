@@ -90,7 +90,7 @@ const initializeDatabase = async () => {
         (callback) =>
           createContact(
             userList[0],
-            "Test Contact Email",
+            "test@email.com",
             [{ name: "LinkedIn", url: "linkedin.com" }],
             callback
           ),

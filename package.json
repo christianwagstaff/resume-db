@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "async": "^3.2.3",
+    "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "debug": "^4.3.3",
@@ -35,7 +36,9 @@
     "express-validator": "^6.14.0",
     "http-errors": "^2.0.0",
     "mongoose": "^6.1.6",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "passport": "^0.5.2",
+    "passport-jwt": "^4.0.0"
   },
   "jest": {
     "testEnvironment": "node",
@@ -48,7 +51,6 @@
       "html"
     ],
     "moduleNameMapper": {
-     
       "^mongoose$": "<rootDir>/node_modules/mongoose"
     }
   }

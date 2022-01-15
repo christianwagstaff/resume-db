@@ -7,6 +7,8 @@ const indexRoute = require("../routes/index");
 const { MongoMemoryServer } = require("mongodb-memory-server");
 const mongoose = require("mongoose");
 const initializeDatabase = require("./initializeDatabase");
+const res = require("express/lib/response");
+const req = require("express/lib/request");
 
 // Set up global middleware
 app.use(express.json());
@@ -14,6 +16,27 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/", indexRoute);
 
 const request = supertest(app);
+
+describe("Gets All Info", () => {
+  let userList, projectList, contactList, aboutList;
+  beforeEach(async () => {
+    let mongoServer = await MongoMemoryServer.create();
+    await mongoose.connect(mongoServer.getUri(), {});
+    [userList, projectList, contactList, aboutList] =
+      await initializeDatabase();
+  });
+  afterEach(async () => {
+    await mongoose.disconnect();
+  });
+  it("Gets all info on index route", async () => {
+    const response = await request.get("/");
+    expect(response.body).toMatchObject({
+      projects: expect.any(Array),
+      contact: expect.any(Array),
+      about: expect.any(Array),
+    });
+  });
+});
 
 describe("Testing Project Route", () => {
   let userList, projectList, contactList, aboutList;
@@ -137,6 +160,29 @@ describe("Testing About Route", () => {
       }),
     });
   });
+  it("Edits Info on PUT", async () => {
+    const response = await request.put("/about").send({
+      aboutId: aboutList[0]._id,
+      headline: "Test Edit Headline",
+      name: aboutList[0].name,
+      about: aboutList[0].about,
+    });
+    expect(response.body).toMatchObject({
+      msg: "About Updated",
+      about: expect.objectContaining({
+        headline: "Test Edit Headline",
+      }),
+    });
+  });
+  it("Deletes about on DELETE", async () => {
+    const response = await request.delete("/about").send({
+      aboutId: aboutList[0]._id,
+    });
+    expect(response.body).toMatchObject({
+      msg: "About Deleted",
+      about: `${aboutList[0]._id.toString()}`,
+    });
+  });
 });
 
 describe("Testing Contact Route", () => {
@@ -154,7 +200,7 @@ describe("Testing Contact Route", () => {
     const response = await request.get("/contact");
     expect(response.body).toMatchObject({
       contact: expect.objectContaining({
-        email: "Test Contact Email",
+        email: "test@email.com",
         links: [
           expect.objectContaining({ name: "LinkedIn", url: "linkedin.com" }),
         ],
@@ -164,13 +210,13 @@ describe("Testing Contact Route", () => {
   it("Creates new contact info on POST", async () => {
     const response = await request.post("/contact").send({
       user: userList[0],
-      email: "test@email.com",
+      email: "testy@email.com",
       links: [{ name: "Test Name", url: "Test Url" }],
     });
     expect(response.body).toMatchObject(
       expect.objectContaining({
         contact: expect.objectContaining({
-          email: "test@email.com",
+          email: "testy@email.com",
           links: [
             expect.objectContaining({ name: "Test Name", url: "Test Url" }),
           ],
@@ -178,5 +224,31 @@ describe("Testing Contact Route", () => {
         msg: "Contact Saved",
       })
     );
+  });
+  it("Edits Contact Details on PUT", async () => {
+    const response = await request.put("/contact").send({
+      contactId: contactList[0]._id,
+      user: contactList[0].user,
+      email: contactList[0].email,
+      links: [...contactList[0].links, { name: "GitHub", url: "github.com" }],
+    });
+    expect(response.body).toMatchObject({
+      msg: "Contact Updated",
+      contact: expect.objectContaining({
+        links: expect.arrayContaining([
+          expect.objectContaining({ name: contactList[0].links[0].name }),
+          expect.objectContaining({ name: "GitHub", url: "github.com" }),
+        ]),
+      }),
+    });
+  });
+  it("Deletes Contact Details on DELETE", async () => {
+    const response = await request.delete("/contact").send({
+      contactId: contactList[0]._id,
+    });
+    expect(response.body).toMatchObject({
+      msg: "Contact Deleted",
+      contact: `${contactList[0]._id.toString()}`,
+    });
   });
 });
