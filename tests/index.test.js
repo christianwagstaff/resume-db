@@ -7,8 +7,6 @@ const indexRoute = require("../routes/index");
 const { MongoMemoryServer } = require("mongodb-memory-server");
 const mongoose = require("mongoose");
 const initializeDatabase = require("./initializeDatabase");
-const res = require("express/lib/response");
-const req = require("express/lib/request");
 
 // Set up global middleware
 app.use(express.json());

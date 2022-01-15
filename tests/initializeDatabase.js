@@ -10,8 +10,8 @@ const initializeDatabase = async () => {
   let projectList = [];
   let contactList = [];
   let aboutList = [];
-  function createUser(name, email, password, cb) {
-    const userDetails = { name, username: email, password };
+  function createUser(email, password, cb) {
+    const userDetails = { username: email, password };
     const user = new User(userDetails);
     user.save(function (err) {
       if (err) {
@@ -62,10 +62,7 @@ const initializeDatabase = async () => {
   }
   function createUsers(cb) {
     async.series(
-      [
-        (callback) =>
-          createUser("Test User", "Test Email", "Test Password", callback),
-      ],
+      [(callback) => createUser("test@email.com", "Test Password", callback)],
       cb
     );
   }

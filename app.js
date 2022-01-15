@@ -3,7 +3,7 @@ const path = require("path");
 const createError = require("http-errors");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
-
+require("dotenv").config();
 const app = express();
 
 // Initialize MongoDB Database
