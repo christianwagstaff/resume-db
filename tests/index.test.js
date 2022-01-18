@@ -87,7 +87,6 @@ describe("API Route", () => {
       .post("/projects")
       .set("Authorization", jwt.token)
       .send({
-        user: userList[0],
         details: "Test Details",
       });
     expect(response.body).toMatchObject(
@@ -150,7 +149,6 @@ describe("API Route", () => {
       .post("/about")
       .set("Authorization", jwt.token)
       .send({
-        user: userList[0],
         name: "Test Name",
         headline: "Test Headline",
         about: "Test About",
@@ -211,15 +209,14 @@ describe("API Route", () => {
       .post("/contact")
       .set("Authorization", jwt.token)
       .send({
-        user: userList[0],
-        links: { name: "Test Name", url: "Test Url" },
+        links: { name: "Test Name", url: "test@url.com" },
       });
     expect(response.body).toMatchObject(
       expect.objectContaining({
         contact: expect.objectContaining({
           links: expect.objectContaining({
             name: "Test Name",
-            url: "Test Url",
+            url: "test@url.com",
           }),
         }),
         msg: "Contact Saved",
@@ -232,7 +229,6 @@ describe("API Route", () => {
       .set("Authorization", jwt.token)
       .send({
         contactId: contactList[0]._id,
-        user: contactList[0].user,
         links: { name: "GitHub", url: "github.com" },
       });
     expect(response.body).toMatchObject({

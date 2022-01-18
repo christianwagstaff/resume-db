@@ -84,7 +84,7 @@ exports.create_project = [
     const errors = validationResult(req);
     // Create Project obj with escaped and trimmed data
     let project = new Project({
-      user: req.body.user,
+      user: req.user,
       name: req.body.name,
       details: req.body.details,
     });
@@ -120,7 +120,7 @@ exports.create_about = [
     const errors = validationResult(req);
     // Create Project obj with escaped and trimmed data
     let about = new About({
-      user: req.body.user,
+      user: req.user,
       name: req.body.name,
       headline: req.body.headline,
       about: req.body.about,
@@ -143,8 +143,8 @@ exports.create_about = [
 // Create new Contact on POST
 exports.create_contact = [
   // Sanitze and Validate Body
-  body("links.name").escape(),
-  body("links.url").escape(),
+  body("links.name").trim().isLength({ min: 1 }).escape(),
+  body("links.url").isURL().escape(),
 
   // Proceed with request after validation and sanitization
   (req, res, next) => {
@@ -152,8 +152,7 @@ exports.create_contact = [
     const errors = validationResult(req);
     // Create Project obj with escaped and trimmed data
     let contact = new Contact({
-      user: req.body.user,
-      email: req.body.email,
+      user: req.user,
       links: req.body.links,
     });
     if (!errors.isEmpty()) {
@@ -272,7 +271,7 @@ exports.edit_contact = [
     const errors = validationResult(req);
     // Create Project obj with escaped and trimmed data
     let contact = new Contact({
-      user: req.body.user,
+      user: req.user,
       links: req.body.links,
       _id: req.body.contactId,
     });

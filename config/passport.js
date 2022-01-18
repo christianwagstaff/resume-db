@@ -17,7 +17,7 @@ const strategy = new JwtStrategy(options, (payload, done) => {
   User.findOne({ _id: payload.sub })
     .then((user) => {
       if (user) {
-        if (Date.now() <= payload.exp) {
+        if (Date.now() <= payload.exp * 1000) {
           done(null, user);
         } else {
           done(null, false);
