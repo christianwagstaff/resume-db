@@ -53,7 +53,7 @@ exports.get_about = (req, res, next) => {
 
 // Send Contact Info on GET
 exports.get_contact = (req, res, next) => {
-  Contact.findOne().exec((err, contact) => {
+  Contact.find().exec((err, contact) => {
     if (err) {
       return next(err);
     }
@@ -142,22 +142,9 @@ exports.create_about = [
 
 // Create new Contact on POST
 exports.create_contact = [
-  // Convert the links to an array
-  (req, res, next) => {
-    if (!(req.body.links instanceof Array)) {
-      if (typeof req.body.links === "undefined") {
-        req.body.links = [];
-      } else {
-        req.body.links = new Array(req.body.links);
-      }
-    }
-    next();
-  },
-
   // Sanitze and Validate Body
-  body("email", "email is required").trim().isEmail().escape(),
-  body("links.*.name").escape(),
-  body("links.*.url").escape(),
+  body("links.name").escape(),
+  body("links.url").escape(),
 
   // Proceed with request after validation and sanitization
   (req, res, next) => {
@@ -275,22 +262,9 @@ exports.edit_about = [
 
 // Edit Contact
 exports.edit_contact = [
-  // Convert the links to an array
-  (req, res, next) => {
-    if (!(req.body.links instanceof Array)) {
-      if (typeof req.body.links === "undefined") {
-        req.body.links = [];
-      } else {
-        req.body.links = new Array(req.body.links);
-      }
-    }
-    next();
-  },
-
   // Sanitze and Validate Body
-  body("email", "email is required").trim().isEmail().escape(),
-  body("links.*.name").escape(),
-  body("links.*.url").escape(),
+  body("links.name").escape(),
+  body("links.url").escape(),
 
   // Proceed with request after validation and sanitization
   (req, res, next) => {
@@ -299,7 +273,6 @@ exports.edit_contact = [
     // Create Project obj with escaped and trimmed data
     let contact = new Contact({
       user: req.body.user,
-      email: req.body.email,
       links: req.body.links,
       _id: req.body.contactId,
     });

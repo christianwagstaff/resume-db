@@ -32,11 +32,8 @@ const initializeDatabase = async () => {
       cb(null, aboutMe);
     });
   }
-  function createContact(user, email, links, cb) {
-    let contactDetails = { user, email };
-    if (links != false) {
-      contactDetails.links = links;
-    }
+  function createContact(user, links, cb) {
+    let contactDetails = { user, links };
     const contact = new Contact(contactDetails);
     contact.save(function (err) {
       if (err) {
@@ -87,8 +84,7 @@ const initializeDatabase = async () => {
         (callback) =>
           createContact(
             userList[0],
-            "test@email.com",
-            [{ name: "LinkedIn", url: "linkedin.com" }],
+            { name: "LinkedIn", url: "linkedin.com" },
             callback
           ),
       ],

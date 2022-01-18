@@ -196,12 +196,14 @@ describe("API Route", () => {
   it("Send contact details on GET", async () => {
     const response = await request.get("/contact");
     expect(response.body).toMatchObject({
-      contact: expect.objectContaining({
-        email: "test@email.com",
-        links: [
-          expect.objectContaining({ name: "LinkedIn", url: "linkedin.com" }),
-        ],
-      }),
+      contact: expect.arrayContaining([
+        expect.objectContaining({
+          links: expect.objectContaining({
+            name: "LinkedIn",
+            url: "linkedin.com",
+          }),
+        }),
+      ]),
     });
   });
   it("Creates new contact info on POST", async () => {
@@ -210,16 +212,15 @@ describe("API Route", () => {
       .set("Authorization", jwt.token)
       .send({
         user: userList[0],
-        email: "testy@email.com",
-        links: [{ name: "Test Name", url: "Test Url" }],
+        links: { name: "Test Name", url: "Test Url" },
       });
     expect(response.body).toMatchObject(
       expect.objectContaining({
         contact: expect.objectContaining({
-          email: "testy@email.com",
-          links: [
-            expect.objectContaining({ name: "Test Name", url: "Test Url" }),
-          ],
+          links: expect.objectContaining({
+            name: "Test Name",
+            url: "Test Url",
+          }),
         }),
         msg: "Contact Saved",
       })
@@ -232,16 +233,12 @@ describe("API Route", () => {
       .send({
         contactId: contactList[0]._id,
         user: contactList[0].user,
-        email: contactList[0].email,
-        links: [...contactList[0].links, { name: "GitHub", url: "github.com" }],
+        links: { name: "GitHub", url: "github.com" },
       });
     expect(response.body).toMatchObject({
       msg: "Contact Updated",
       contact: expect.objectContaining({
-        links: expect.arrayContaining([
-          expect.objectContaining({ name: contactList[0].links[0].name }),
-          expect.objectContaining({ name: "GitHub", url: "github.com" }),
-        ]),
+        links: expect.objectContaining({ name: "GitHub", url: "github.com" }),
       }),
     });
   });
