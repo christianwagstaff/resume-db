@@ -8,7 +8,7 @@ const cors = require("cors");
 const compression = require("compression");
 const helmet = require("helmet");
 
-require("dotenv").config();
+require("dotenv").config({ multiline: true });
 
 // Require Route Handles
 const indexRoute = require("./routes/index");
