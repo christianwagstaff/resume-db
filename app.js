@@ -16,8 +16,8 @@ const userRoute = require("./routes/users");
 
 const app = express();
 
-app.use(helmet());
 app.use(cors());
+app.use(helmet());
 
 // Initialize MongoDB Database
 require("./config/mongoDB_production");
