@@ -107,7 +107,7 @@ describe("API Route", () => {
       .put("/projects")
       .set("Authorization", jwt.token)
       .send({
-        projectId: projectList[0],
+        id: projectList[0],
         name: "Test Edit Project",
         details: "Test Edit Details",
       });
@@ -126,7 +126,7 @@ describe("API Route", () => {
       .delete("/projects")
       .set("Authorization", jwt.token)
       .send({
-        projectId: projectList[0]._id,
+        id: projectList[0]._id,
       });
     expect(response.body).toMatchObject({
       msg: "Project Deleted",
@@ -167,10 +167,10 @@ describe("API Route", () => {
       .put("/about")
       .set("Authorization", jwt.token)
       .send({
-        aboutId: aboutList[0]._id,
+        id: aboutList[0]._id,
         headline: "Test Edit Headline",
         name: aboutList[0].name,
-        about: aboutList[0].about,
+        // about: aboutList[0].about,
       });
     expect(response.body).toMatchObject({
       msg: "About Updated",
@@ -184,7 +184,7 @@ describe("API Route", () => {
       .delete("/about")
       .set("Authorization", jwt.token)
       .send({
-        aboutId: aboutList[0]._id,
+        id: aboutList[0]._id,
       });
     expect(response.body).toMatchObject({
       msg: "About Deleted",
@@ -228,7 +228,7 @@ describe("API Route", () => {
       .put("/contact")
       .set("Authorization", jwt.token)
       .send({
-        contactId: contactList[0]._id,
+        id: contactList[0]._id,
         links: { name: "GitHub", url: "github.com" },
       });
     expect(response.body).toMatchObject({
@@ -243,7 +243,7 @@ describe("API Route", () => {
       .delete("/contact")
       .set("Authorization", jwt.token)
       .send({
-        contactId: contactList[0]._id,
+        id: contactList[0]._id,
       });
     expect(response.body).toMatchObject({
       msg: "Contact Deleted",

@@ -76,7 +76,7 @@ exports.create_project = [
   },
   body("name", "name is required").trim().isLength({ min: 1 }).escape(),
   body("details", "details are required").trim().isLength({ min: 1 }).escape(),
-  body("img").escape(),
+  body("img").isURL(),
 
   // Proceed with request after validation and sanitization
   (req, res, next) => {
@@ -111,8 +111,8 @@ exports.create_project = [
 exports.create_about = [
   // Sanitze and Validate Body
   body("name", "name is required").trim().isLength({ min: 1 }).escape(),
-  body("about", "details are required").trim().isLength({ min: 1 }).escape(),
-  body("headline", "headline is required").trim().isLength({ min: 1 }).escape(),
+  body("about", "details are required").trim().isLength({ min: 1 }),
+  body("headline", "headline is required").trim().isLength({ min: 1 }),
 
   // Proceed with request after validation and sanitization
   (req, res, next) => {
@@ -144,7 +144,7 @@ exports.create_about = [
 exports.create_contact = [
   // Sanitze and Validate Body
   body("links.name").trim().isLength({ min: 1 }).escape(),
-  body("links.url").isURL().escape(),
+  body("links.url").isURL(),
 
   // Proceed with request after validation and sanitization
   (req, res, next) => {
@@ -185,7 +185,7 @@ exports.edit_project = [
   },
   body("name", "name is required").trim().isLength({ min: 1 }).escape(),
   body("details", "details are required").trim().isLength({ min: 1 }).escape(),
-  body("img").escape(),
+  body("img").isURL(),
 
   // Proceed with request after validation and sanitization
   (req, res, next) => {
@@ -195,7 +195,7 @@ exports.edit_project = [
     let project = new Project({
       name: req.body.name,
       details: req.body.details,
-      _id: req.body.projectId, // Required so a new ID is not issued
+      _id: req.body.id, // Required so a new ID is not issued
     });
     if (req.body.img !== "") {
       project.img = req.body.img;
@@ -207,7 +207,7 @@ exports.edit_project = [
     }
     // There are no errors, save the new project
     Project.findByIdAndUpdate(
-      req.body.projectId,
+      req.body.id,
       project,
       { new: true },
       function (err, saved) {
@@ -224,9 +224,9 @@ exports.edit_project = [
 // Edit About
 exports.edit_about = [
   // Sanitze and Validate Body
-  body("name", "name is required").trim().isLength({ min: 1 }).escape(),
-  body("about", "details are required").trim().isLength({ min: 1 }).escape(),
-  body("headline", "headline is required").trim().isLength({ min: 1 }).escape(),
+  body("name", "name is required").trim().escape(),
+  body("about", "details are required").trim(),
+  body("headline", "headline is required").trim(),
 
   // Proceed with request after validation and sanitization
   (req, res, next) => {
@@ -234,18 +234,24 @@ exports.edit_about = [
     const errors = validationResult(req);
     // Create Project obj with escaped and trimmed data
     let about = new About({
-      name: req.body.name,
-      headline: req.body.headline,
-      about: req.body.about,
-      _id: req.body.aboutId, // Required so a new id is not issued
+      _id: req.body.id, // Required so a new id is not issued
     });
+    if (req.body.name) {
+      about.name = req.body.name;
+    }
+    if (req.body.headline) {
+      about.headline = req.body.headline;
+    }
+    if (req.body.about) {
+      about.about = req.body.about;
+    }
     if (!errors.isEmpty()) {
       // There are validation errors, send back the data for correction
       return res.json({ errors: errors.array(), about });
     }
     // There are no errors, save the new project
     About.findByIdAndUpdate(
-      req.body.aboutId,
+      req.body.id,
       about,
       { new: true },
       function (err, saved) {
@@ -263,7 +269,7 @@ exports.edit_about = [
 exports.edit_contact = [
   // Sanitze and Validate Body
   body("links.name").escape(),
-  body("links.url").escape(),
+  body("links.url").isURL(),
 
   // Proceed with request after validation and sanitization
   (req, res, next) => {
@@ -273,7 +279,7 @@ exports.edit_contact = [
     let contact = new Contact({
       user: req.user,
       links: req.body.links,
-      _id: req.body.contactId,
+      _id: req.body.id,
     });
     if (!errors.isEmpty()) {
       // There are validation errors, send back the data for correction
@@ -281,7 +287,7 @@ exports.edit_contact = [
     }
     // There are no errors, save the new project
     Contact.findByIdAndUpdate(
-      req.body.contactId,
+      req.body.id,
       contact,
       { new: true },
       function (err, saved) {
@@ -301,30 +307,30 @@ exports.edit_contact = [
 
 // Delete project by ID
 exports.delete_project = (req, res, next) => {
-  Project.findByIdAndDelete(req.body.projectId, {}, (err) => {
+  Project.findByIdAndDelete(req.body.id, {}, (err) => {
     if (err) {
       return next(err);
     }
-    res.json({ msg: "Project Deleted", project: req.body.projectId });
+    res.json({ msg: "Project Deleted", project: req.body.id });
   });
 };
 
 // Delete About
 exports.delete_about = (req, res, next) => {
-  About.findByIdAndDelete(req.body.aboutId, {}, (err) => {
+  About.findByIdAndDelete(req.body.id, {}, (err) => {
     if (err) {
       return next(err);
     }
-    res.json({ msg: "About Deleted", about: req.body.aboutId });
+    res.json({ msg: "About Deleted", about: req.body.id });
   });
 };
 
 // DELETE Contact
 exports.delete_contact = (req, res, next) => {
-  Contact.findByIdAndDelete(req.body.contactId, {}, (err) => {
+  Contact.findByIdAndDelete(req.body.id, {}, (err) => {
     if (err) {
       return next(err);
     }
-    res.json({ msg: "Contact Deleted", contact: req.body.contactId });
+    res.json({ msg: "Contact Deleted", contact: req.body.id });
   });
 };
