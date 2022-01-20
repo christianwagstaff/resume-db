@@ -4,7 +4,7 @@ const createError = require("http-errors");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const passport = require("passport");
-const cors = require("cors");
+// const cors = require("cors");
 const compression = require("compression");
 const helmet = require("helmet");
 
@@ -17,7 +17,7 @@ const userRoute = require("./routes/users");
 const app = express();
 
 app.use(helmet());
-app.use(cors());
+// app.use(cors());
 
 // Initialize MongoDB Database
 require("./config/mongoDB_production");
