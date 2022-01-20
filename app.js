@@ -5,6 +5,8 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const passport = require("passport");
 const cors = require("cors");
+const compression = require("compression");
+const helmet = require("helmet");
 
 require("dotenv").config();
 
@@ -13,6 +15,8 @@ const indexRoute = require("./routes/index");
 const userRoute = require("./routes/users");
 
 const app = express();
+
+app.use(helmet());
 
 // Initialize MongoDB Database
 require("./config/mongoDB_production");
@@ -29,6 +33,7 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(compression()); // Compress all routes
 
 app.use(express.static(path.join(__dirname, "public")));
 
